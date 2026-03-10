@@ -7,6 +7,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import org.junit.runner.RunWith;
@@ -23,38 +24,56 @@ import static org.hamcrest.Matchers.containsString;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+
 @RunWith(SpringRunner.class)
-@WebMvcTest(BinaryController.class)
-public class BinaryControllerTest {
+@WebMvcTest(BinaryAPIController.class)
+public class BinaryAPIControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
-   
+
     @Test
-    public void getDefault() throws Exception {
-        this.mvc.perform(get("/"))//.andDo(print())
+    public void add() throws Exception {
+        this.mvc.perform(get("/add").param("operand1","111").param("operand2","1010"))//.andDo(print())
             .andExpect(status().isOk())
-            .andExpect(view().name("calculator"))
-			.andExpect(model().attribute("operand1", ""))
-			.andExpect(model().attribute("operand1Focused", false));
-    }
-	
-	    @Test
-    public void getParameter() throws Exception {
-        this.mvc.perform(get("/").param("operand1","111"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("calculator"))
-			.andExpect(model().attribute("operand1", "111"))
-			.andExpect(model().attribute("operand1Focused", true));
+            .andExpect(content().string("10001"));
     }
 	@Test
-	    public void postParameter() throws Exception {
-        this.mvc.perform(post("/").param("operand1","111").param("operator","+").param("operand2","111"))//.andDo(print())
+    public void add2() throws Exception {
+        this.mvc.perform(get("/add_json").param("operand1","111").param("operand2","1010"))//.andDo(print())
             .andExpect(status().isOk())
-            .andExpect(view().name("result"))
-			.andExpect(model().attribute("result", "1110"))
-			.andExpect(model().attribute("operand1", "111"));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.operand1").value(111))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.operand2").value(1010))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.result").value(10001))
+			.andExpect(MockMvcResultMatchers.jsonPath("$.operator").value("add"));
+    }
+
+    @Test
+    public void multiply() throws Exception {
+        this.mvc.perform(get("/multiply")
+                        .param("operand1", "10")
+                        .param("operand2", "11"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("110"));
+    }
+
+    @Test
+    public void and() throws Exception {
+        this.mvc.perform(get("/and")
+                        .param("operand1", "1010")
+                        .param("operand2", "1100"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("1000"));
+    }
+
+    @Test
+    public void or() throws Exception {
+        this.mvc.perform(get("/or")
+                        .param("operand1", "101")
+                        .param("operand2", "010"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("111"));
     }
 
 }
